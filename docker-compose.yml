@@ -1,0 +1,30 @@
+services:
+  openedai-seamless:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # If you're using traefik (see below) or similar service, you can
+    # replace the "ports" with "expose" to reduce port clutter on your server.
+    ports:
+      - 3000:3000
+    # Comment the deploy section if you're not using an nvidia GPU.
+    # AMD or Intel Arcs may work as well, but I don't have those to test.
+    # Without this section the model will run on your CPU.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: [ '0' ]
+              capabilities: [ gpu ]
+    # Uncomment the following lines if you're using traefik.
+    # Make sure to replace YOUR_DOMAIN with your domain name!
+    # If you're not using TLS, then remove the "tls." lines and "websecure" from entrypoints.
+    #labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.routers.openedai-seamless.rule=Host(`openedai.YOUR_DOMAIN`) && PathPrefix(`/v1/audio/speech`)"
+    #  - "traefik.http.routers.openedai-seamless.entrypoints=web,websecure"
+    #  - "traefik.http.routers.openedai-seamless.tls.certResolver=letsencrypt"
+    #  - "traefik.http.routers.openedai-seamless.tls.domains[0].main=YOUR_DOMAIN"
+    #  - "traefik.http.routers.openedai-seamless.tls.domains[0].sans=*.YOUR_DOMAIN"
+    #  - "traefik.http.services.openedai-seamless.loadbalancer.server.port=3000"
